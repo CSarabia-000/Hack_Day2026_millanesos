@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- WPF owns process initialization and DPI through the manifest; Forms is only used for the tray and screen API. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Mindie.ico</ApplicationIcon>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <AssemblyName>Mindie</AssemblyName>
+    <RootNamespace>Mindie</RootNamespace>
+    <IncludeDiagnostics Condition="'$(IncludeDiagnostics)' == '' and '$(Configuration)' == 'Debug'">true</IncludeDiagnostics>
+    <Version>0.18.1</Version>
+    <Description>Mascota de escritorio nativa para Windows con Ollama y NVIDIA API.</Description>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IncludeDiagnostics)' == 'true'">
+    <DefineConstants>$(DefineConstants);MINDIE_DIAGNOSTICS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Diagnostics\**\*.cs" Condition="'$(IncludeDiagnostics)' != 'true'" />
+    <PackageReference Include="System.Speech" Version="10.0.0" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
+    <PackageReference Include="Markdig" Version="1.5.0" />
+    <PackageReference Include="AngleSharp" Version="1.8.6" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+    <Resource Include="Assets\Sprites\*.png" />
+    <Resource Include="Assets\Previews\*.png" />
+    <Resource Include="Assets\Mindie.ico" />
+    <Resource Include="Assets\Logo.png" />
+    <Resource Include="Assets\LogoMark.png" />
+    <Content Include="..\THIRD_PARTY_NOTICES.txt" Link="THIRD_PARTY_NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

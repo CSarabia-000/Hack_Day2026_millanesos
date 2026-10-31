@@ -1,0 +1,19 @@
+<Window x:Class="Mindie.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Mindie" Icon="Assets/Mindie.ico" Width="1280" Height="870" MinWidth="940" MinHeight="650" WindowStartupLocation="Manual">
+  <Grid Background="{StaticResource Ground}">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="218"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Border Background="#F0F2F4" BorderBrush="#E2E6E9" BorderThickness="0,0,1,0">
+      <DockPanel Margin="17,25,17,15">
+        <StackPanel DockPanel.Dock="Top" Margin="13,7,0,35"><StackPanel Orientation="Horizontal"><Image Source="Assets/LogoMark.png" Width="42" Height="42" Margin="-5,0,5,0" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="Logo de Mindie"/><TextBlock Text="Mindie" FontSize="25" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel><TextBlock Text="Un poco de compañía." FontSize="12" Foreground="#667078" Margin="0,9,0,0"/></StackPanel>
+        <StackPanel DockPanel.Dock="Bottom"><Border Height="1" Background="#DFE4E7" Margin="10,13"/><Button x:Name="SettingsNav" Style="{StaticResource Nav}" Click="SettingsClick" Content="Configuración"/><StackPanel Margin="13,25,0,6"><TextBlock Text="EN TU EQUIPO" FontSize="10" FontWeight="SemiBold" Foreground="#727D85"/><TextBlock Text="Tus ideas. Tu espacio." Foreground="#667078" FontSize="12" Margin="0,7,0,0"/></StackPanel></StackPanel>
+        <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel><Button x:Name="ChatNav" Style="{StaticResource Nav}" Click="ChatClick" Content="Conversación"/><Button x:Name="HistoryNav" Style="{StaticResource Nav}" Click="HistoryClick" Content="Historial"/><Button x:Name="HomeNav" Style="{StaticResource Nav}" Click="HomeClick" Content="Compañeros"/><Button x:Name="SavedNav" Style="{StaticResource Nav}" Click="SavedClick" Content="Mis guardados"/><Button x:Name="BrainNav" Style="{StaticResource Nav}" Click="BrainClick" Content="Cerebro digital"/><Border Height="1" Background="#DFE4E7" Margin="12,25,12,17"/><TextBlock Text="A MANO" Foreground="#727D85" FontSize="10" FontWeight="SemiBold" Margin="14,0,0,9"/><Button x:Name="CaptureNav" Style="{StaticResource Nav}" Click="CaptureClick" Content="Guardar en mente"/><Button x:Name="ShowPetNav" Style="{StaticResource Nav}" Click="ShowPetClick" Content="Mostrar compañero"/></StackPanel></ScrollViewer>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Column="1" Margin="36,0,28,0">
+      <Grid.RowDefinitions><RowDefinition Height="68"/><RowDefinition Height="*"/><RowDefinition Height="40"/></Grid.RowDefinitions>
+      <Grid><TextBlock x:Name="Breadcrumb" Text="Tu espacio   /   Compañeros" FontSize="12" Foreground="#667078" VerticalAlignment="Center"/><Button HorizontalAlignment="Right" Padding="12,6" MinHeight="30" Click="SettingsClick" Background="Transparent" BorderThickness="0"><StackPanel Orientation="Horizontal"><Ellipse Fill="#708367" Width="5" Height="5" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="{Binding Connection}" FontSize="11" Foreground="#667078"/></StackPanel></Button></Grid>
+      <ContentControl x:Name="PageHost" Grid.Row="1"/>
+      <TextBlock Grid.Row="2" Text="{Binding ProcessingLabel}" FontSize="11" Foreground="#667078" VerticalAlignment="Center"/>
+      <Border x:Name="NoticeBar" Visibility="Collapsed" Grid.Row="2" Background="#E8EDE3" CornerRadius="6" Padding="12,7" HorizontalAlignment="Right" MaxWidth="680"><TextBlock x:Name="NoticeText" FontSize="12"/></Border>
+    </Grid>
+  </Grid>
+</Window>
