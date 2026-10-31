@@ -1,6 +1,6 @@
 # MINDIE 🧠🐾
 
-**MINDIE** es un segundo cerebro digital impulsado por **Gemma 4** (o cualquier modelo abierto). Captura información, organiza el conocimiento, conecta ideas y te ayuda a recuperar tus recuerdos digitales.
+**MINDIE** es un segundo cerebro digital impulsado por la API  de **Gemma 4** o de forma local a través de Ollama (o cualquier modelo de pesos abierto). Captura información, organiza el conocimiento, conecta ideas y te ayuda a recuperar tus recuerdos digitales.
 
 Es una app de escritorio estilo *tamagotchi*: una mascota vive en tu PC y se "alimenta" de la información que le das.
 
@@ -17,9 +17,8 @@ Es una app de escritorio estilo *tamagotchi*: una mascota vive en tu PC y se "al
 ### Recuperación y exploración
 - **Chat con tu conocimiento**: pregunta dentro de la app sobre los documentos que contiene.
 - **Historial de conversaciones**: revisa y retoma charlas anteriores.
-- **Grafo de nodos**: visualiza cómo se conecta la información entre sí.
-- **Apartado "Cerebro de conocimiento"**: explora todo lo que MINDIE ha aprendido.
-
+- **Grafo de nodos**: es el cerebro de conocimiento, explora lo que MINDI ha aprendido
+  generando una visualización de cómo se conecta la información entre sí.
 ### Personalización
 - **Mascota a elección**: el usuario puede agregar su propia mascota con sus imágenes ya definidas.
 
