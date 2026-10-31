@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mindie – Tu segundo cerebro digital</title>
+  <meta name="description" content="MINDIE es un segundo cerebro digital estilo tamagotchi: una mascota que vive en tu PC y se alimenta de tu información." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================================
+       PALETA (extraída de la imagen de la burbuja)
+       ========================================================= */
+    :root {
+      --color-primary:        #8E8FD6;
+      --color-primary-light:  #B7B9EC;
+      --color-primary-dark:   #6C6DB8;
+      --color-cyan:           #8FE3F5;
+      --color-aqua-soft:      #C8F1FA;
+      --color-pink:           #F3B6DD;
+      --color-magenta-soft:   #E7A5D6;
+      --color-eyes:           #1C1F4A;
+      --color-eye-glow:       #4FA8FF;
+      --color-cheeks:         #F5A9B8;
+      --color-smile:          #B76F9E;
+      --color-bg:             #FFFFFF;
+      --color-bg-glow:        #EEF6FF;
+      --color-shadow:         #5B5CA8;
+      --color-page-bg:        #000000;
+
+      --iridescent: radial-gradient(circle at 30% 25%, #FFFFFF 0%, #C8F1FA 18%, #B7B9EC 45%, #8E8FD6 70%, #F3B6DD 100%);
+      --radius: 18px;
+      --shadow-win: 0 20px 50px -18px rgba(91, 92, 168, .45), 0 2px 0 rgba(28, 31, 74, .04);
+      --pop: cubic-bezier(.34, 1.56, .64, 1);
+      --font: "Nunito", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--color-eyes);
+      background: var(--color-bg-glow);
+      overflow-x: clip;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; }
+
+    /* =========================================================
+       COMPONENTES BASE
+       ========================================================= */
+
+    /* Ventana estilo escritorio */
+    .win {
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-win);
+      border: 1px solid rgba(183, 185, 236, .55);
+      overflow: hidden;
+    }
+    .win-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-bg-glow);
+      font: 600 12px var(--mono);
+      color: var(--color-primary-dark);
+    }
+    .win-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+    .win-bar i:nth-child(1) { background: var(--color-pink); }
+    .win-bar i:nth-child(2) { background: var(--color-aqua-soft); border: 1px solid var(--color-cyan); }
+    .win-bar i:nth-child(3) { background: var(--color-primary-light); }
+    .win-bar span { margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .win-body { padding: 10px; }
+
+    /* Figura placeholder (reemplázala por <img> o <video> cuando tengas material) */
+    .ph {
+      position: relative;
+      aspect-ratio: var(--ar, 16 / 10);
+      border-radius: 12px;
+      background:
+        repeating-linear-gradient(45deg, var(--color-aqua-soft) 0 14px, var(--color-bg-glow) 14px 28px);
+      border: 2px dashed var(--color-primary-light);
+      display: grid; place-items: center;
+      overflow: hidden;
+    }
+    .ph::before { /* sol */
+      content: ""; position: absolute; top: 22%; right: 24%;
+      width: 14%; aspect-ratio: 1; border-radius: 50%;
+      background: var(--color-pink);
+    }
+    .ph::after { /* montaña */
+      content: ""; position: absolute; bottom: 0; left: 10%;
+      width: 80%; height: 45%;
+      background: linear-gradient(var(--color-primary-light), var(--color-primary));
+      clip-path: polygon(0 100%, 35% 20%, 55% 60%, 72% 35%, 100% 100%);
+      opacity: .85;
+    }
+    .ph-label {
+      position: relative; z-index: 1;
+      font: 600 11px var(--mono);
+      background: var(--color-bg); color: var(--color-primary-dark);
+      padding: 4px 8px; border-radius: 99px;
+      box-shadow: 0 2px 8px rgba(91, 92, 168, .2);
+    }
+
+    /* Mascota (logo) */
+    .bubble {
+      --s: 140px;
+      width: var(--s); height: var(--s);
+      object-fit: contain;
+      filter: drop-shadow(0 calc(var(--s) * .12) calc(var(--s) * .15) rgba(91, 92, 168, .45));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 50% { transform: translateY(-10px); } }
+
+    /* Botones */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 22px; border-radius: 99px;
+      font: 800 16px var(--font); text-decoration: none;
+      transition: transform .25s var(--pop), box-shadow .25s;
+    }
+    .btn:hover { transform: translateY(-3px) scale(1.03); }
+    .btn-primary {
+      background: var(--color-eyes); color: var(--color-bg);
+      box-shadow: 0 10px 24px -10px var(--color-shadow);
+    }
+    .btn-ghost {
+      background: var(--color-bg); color: var(--color-eyes);
+      border: 2px solid var(--color-primary-light);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font: 600 13px var(--mono); letter-spacing: .04em;
+      color: var(--color-primary-dark);
+      background: var(--color-bg); padding: 6px 12px; border-radius: 99px;
+      border: 1px solid var(--color-primary-light);
+    }
+
+    /* =========================================================
+       MENUBAR
+       ========================================================= */
+    .menubar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50;
+      display: flex; align-items: center; gap: 18px;
+      padding: 8px 20px;
+      background: rgba(255, 255, 255, .7);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(183, 185, 236, .4);
+      font-size: 14px; font-weight: 600;
+    }
+    .menubar .logo { display: flex; align-items: center; gap: 8px; font-weight: 900; text-decoration: none; }
+    .menubar .logo .bubble { --s: 28px; animation: none; filter: none; }
+    .menubar nav { display: flex; gap: 16px; }
+    .menubar nav a { text-decoration: none; opacity: .75; }
+    .menubar nav a:hover { opacity: 1; }
+    .menubar .spacer { flex: 1; }
+    .menubar .clock { font: 600 13px var(--mono); color: var(--color-primary-dark); }
+    .menubar .btn { padding: 7px 14px; font-size: 13px; }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 110px 20px 80px;
+      background:
+        radial-gradient(60% 50% at 50% 40%, var(--color-bg) 0%, transparent 70%),
+        radial-gradient(40% 40% at 15% 20%, rgba(200, 241, 250, .8), transparent 70%),
+        radial-gradient(40% 40% at 85% 80%, rgba(243, 182, 221, .55), transparent 70%),
+        var(--color-bg-glow);
+    }
+    .hero-center { position: relative; z-index: 2; text-align: center; max-width: 640px; }
+    .hero-center .bubble { --s: 160px; margin: 0 auto 28px; }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(48px, 9vw, 104px);
+      font-weight: 900; line-height: .95; letter-spacing: -.04em;
+    }
+    .hero h1 .shine {
+      background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-magenta-soft), var(--color-cyan), var(--color-primary-dark));
+      background-size: 200% auto;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: shine 6s linear infinite;
+    }
+    @keyframes shine { to { background-position: 200% center; } }
+    .hero p.lead { font-size: clamp(18px, 2.4vw, 22px); margin: 18px auto 30px; max-width: 34ch; opacity: .8; }
+    .hero .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero .note { margin-top: 14px; font: 400 12px var(--mono); opacity: .55; }
+
+    /* Ventanas flotantes del hero */
+    .float { position: absolute; z-index: 1; will-change: transform; }
+    .float .win {
+      width: var(--w, 230px);
+      opacity: 0;
+      animation: popIn .8s var(--pop) forwards;
+      animation-delay: var(--d, 0s);
+      rotate: var(--r, 0deg);
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.4) translateY(30px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .f1 { top: 14%; left: 4%;  --w: 250px; --r: -6deg; --d: .2s; }
+    .f2 { top: 12%; right: 5%; --w: 220px; --r: 5deg;  --d: .35s; }
+    .f3 { bottom: 10%; left: 8%; --w: 210px; --r: 4deg; --d: .5s; }
+    .f4 { bottom: 12%; right: 7%; --w: 260px; --r: -4deg; --d: .65s; }
+    .f5 { top: 46%; left: 1%; --w: 150px; --r: 8deg; --d: .8s; }
+
+    /* =========================================================
+       SECCIÓN "LA VISIÓN" (scroll pegajoso con imágenes que aparecen)
+       ========================================================= */
+    .dream { position: relative; height: 320vh; background: var(--color-bg); }
+    .dream-sticky {
+      position: sticky; top: 0;
+      height: 100vh; overflow: hidden;
+      display: grid; place-items: center;
+      padding: 70px 20px 20px;
+    }
+    .dream-title {
+      position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 3;
+    }
+    .notes { position: relative; z-index: 3; width: min(520px, 100%); }
+    .notes .win-body { padding: 22px 26px 26px; }
+    .manifesto { font-size: clamp(18px, 2.2vw, 24px); font-weight: 800; line-height: 1.35; margin: 0; }
+    .manifesto .w { opacity: .18; transition: opacity .3s; }
+    .manifesto .w.on { opacity: 1; }
+    .notes .sign { margin-top: 16px; font: 400 13px var(--mono); color: var(--color-primary-dark); }
+
+    .dream-item {
+      position: absolute; z-index: 2;
+      width: var(--w, 200px);
+      opacity: 0;
+      transform: translateY(40px) scale(.5) rotate(0deg);
+      transition: opacity .5s, transform .7s var(--pop);
+    }
+    .dream-item.on { opacity: 1; transform: translateY(0) scale(1) rotate(var(--r, 0deg)); }
+    .dream-item.polaroid { background: var(--color-bg); padding: 10px 10px 14px; border-radius: 8px; box-shadow: var(--shadow-win); }
+    .dream-item figcaption { font: 600 12px var(--mono); text-align: center; margin-top: 8px; color: var(--color-primary-dark); }
+    .dream-item.sticker .ph { --ar: 1; border-radius: 50%; border-color: var(--color-pink); }
+    .d1 { top: 14%; left: 5%;  --w: 230px; --r: -8deg; }
+    .d2 { top: 16%; right: 6%; --w: 210px; --r: 6deg; }
+    .d3 { bottom: 8%; left: 9%; --w: 240px; --r: 5deg; }
+    .d4 { bottom: 9%; right: 8%; --w: 220px; --r: -6deg; }
+    .d5 { top: 50%; left: 22%; --w: 120px; --r: -10deg; }
+    .d6 { top: 46%; right: 21%; --w: 130px; --r: 9deg; }
+
+    /* =========================================================
+       FUNCIONES (reveal al hacer scroll)
+       ========================================================= */
+    section.block { padding: 120px 20px; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .section-head { text-align: center; margin-bottom: 70px; }
+    .section-head h2 { font-size: clamp(34px, 5vw, 56px); font-weight: 900; letter-spacing: -.03em; margin: 14px 0 10px; }
+    .section-head p { opacity: .7; font-size: 18px; margin: 0; }
+
+    .feature {
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px;
+      align-items: center; margin-bottom: 110px;
+    }
+    .feature:nth-child(even) .feature-text { order: 2; }
+    .feature-text .tag { font: 600 13px var(--mono); color: var(--color-smile); }
+    .feature-text h3 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 900; letter-spacing: -.02em; margin: 8px 0 12px; line-height: 1.05; }
+    .feature-text p { font-size: 18px; line-height: 1.55; opacity: .75; margin: 0; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(60px) scale(.92) rotate(var(--r0, -2deg));
+      transition: opacity .7s, transform .9s var(--pop);
+      transition-delay: var(--delay, 0s);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* Marquee */
+    .marquee {
+      background: var(--color-eyes); color: var(--color-bg);
+      overflow: hidden; padding: 22px 0;
+      rotate: -2deg; margin: 0 -20px;
+    }
+    .marquee-track { display: flex; gap: 40px; width: max-content; animation: marquee 22s linear infinite; }
+    .marquee span { font-size: clamp(22px, 3vw, 34px); font-weight: 900; white-space: nowrap; }
+    .marquee span:nth-child(odd) { color: var(--color-cyan); }
+    .marquee span:nth-child(3n) { color: var(--color-pink); }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    /* Pasos */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .step .win-body { padding: 16px; }
+    .step h4 { margin: 16px 4px 6px; font-size: 22px; font-weight: 900; }
+    .step p { margin: 0 4px 6px; opacity: .7; line-height: 1.5; }
+    .step .num {
+      display: inline-grid; place-items: center;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--iridescent); font-weight: 900;
+      margin: 0 4px;
+    }
+
+    /* FAQ */
+    .faq { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
+    .faq details {
+      background: var(--color-bg); border-radius: 14px;
+      border: 1px solid rgba(183, 185, 236, .6);
+      padding: 18px 22px;
+    }
+    .faq summary { cursor: pointer; font-weight: 800; font-size: 18px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; font: 600 20px var(--mono); color: var(--color-primary); transition: rotate .3s; }
+    .faq details[open] summary::after { rotate: 45deg; }
+    .faq details p { margin: 12px 0 0; opacity: .75; line-height: 1.55; }
+
+    /* CTA final */
+    .cta {
+      text-align: center; padding: 140px 20px;
+      background:
+        radial-gradient(50% 60% at 50% 50%, rgba(183, 185, 236, .5), transparent 70%),
+        var(--color-bg);
+    }
+    .cta .bubble { --s: 110px; margin: 0 auto 26px; }
+    .cta h2 { font-size: clamp(36px, 6vw, 64px); font-weight: 900; letter-spacing: -.03em; margin: 0 0 24px; }
+
+    footer {
+      background: var(--color-eyes); color: var(--color-primary-light);
+      padding: 40px 20px; text-align: center;
+      font: 400 13px var(--mono);
+    }
+    footer strong { color: var(--color-bg); font-family: var(--font); font-size: 22px; display: block; margin-bottom: 6px; }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+    @media (max-width: 900px) {
+      .menubar nav { display: none; }
+      .f5, .d5, .d6 { display: none; }
+      .f1 { --w: 170px; top: 10%; left: -20px; }
+      .f2 { --w: 150px; top: 9%; right: -20px; }
+      .f3 { --w: 150px; bottom: 5%; left: -10px; }
+      .f4 { --w: 170px; bottom: 4%; right: -20px; }
+      .d1, .d2, .d3, .d4 { --w: 140px; }
+      .d1 { top: 10%; left: -10px; } .d2 { top: 12%; right: -10px; }
+      .d3 { bottom: 5%; left: -10px; } .d4 { bottom: 6%; right: -10px; }
+      .feature { grid-template-columns: 1fr; gap: 28px; margin-bottom: 80px; }
+      .feature:nth-child(even) .feature-text { order: 0; }
+      .steps { grid-template-columns: 1fr; }
+      .menubar .clock { display: none; }
+    }
+
+    /* Accesibilidad: sin animaciones si el usuario lo pide */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .float .win, .reveal, .dream-item { opacity: 1 !important; transform: none !important; }
+      .manifesto .w { opacity: 1; }
+      .dream { height: auto; }
+      .dream-sticky { position: relative; height: auto; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= MENUBAR ================= -->
+  <header class="menubar">
+    <a href="#" class="logo">
+      <img class="bubble" src="utils/images/Mindie_logo.png" alt="" />
+      Mindie
+    </a>
+    <nav>
+      <a href="#vision">Visión</a>
+      <a href="#funciones">Funciones</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <span class="spacer"></span>
+    <span class="clock" id="clock">--:--</span>
+    <a href="#preview" class="btn btn-primary">Ver preview</a>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <!-- Ventanas flotantes: data-speed controla el parallax -->
+    <div class="float f1" data-speed="-0.25">
+      <div class="win"><div class="win-bar"><i></i><i></i><i></i><span>demo-01.mov</span></div>
+        <div class="win-body"><div class="ph"><span class="ph-label">Video 16:10</span></div></div></div>
+    </div>
+    <div class="float f2" data-speed="-0.4">
+      <div class="win"><div class="win-bar"><i></i><i></i><i></i><span>pantalla.png</span></div>
+        <div class="win-body"><div class="ph" style="--ar: 4/5"><span class="ph-label">4:5</span></div></div></div>
+    </div>
+    <div class="float f3" data-speed="-0.15">
+      <div class="win"><div class="win-bar"><i></i><i></i><i></i><span>idea.mov</span></div>
+        <div class="win-body"><div class="ph" style="--ar: 1"><span class="ph-label">1:1</span></div></div></div>
+    </div>
+    <div class="float f4" data-speed="-0.3">
+      <div class="win"><div class="win-bar"><i></i><i></i><i></i><span>preview.mov</span></div>
+        <div class="win-body"><div class="ph"><span class="ph-label">Video 16:10</span></div></div></div>
+    </div>
+    <div class="float f5" data-speed="-0.5">
+      <div class="win"><div class="win-bar"><i></i><i></i><i></i></div>
+        <div class="win-body"><div class="ph" style="--ar: 1"><span class="ph-label">Icono</span></div></div></div>
+    </div>
+
+    <div class="hero-center">
+      <img class="bubble" src="utils/images/Mindie_logo.png" alt="Mindie, tu mascota" />
+      <h1><span class="shine">Mindie</span></h1>
+      <p class="lead">Tu segundo cerebro digital: una mascota que vive en tu PC y se alimenta de lo que sabes.</p>
+      <div class="actions">
+        <a href="#preview" class="btn btn-primary">Ver preview ↓</a>
+        <a href="#funciones" class="btn btn-ghost">Conocer más</a>
+      </div>
+      <div class="note">Open source · Modelos locales · Hack Day 2026</div>
+    </div>
+  </section>
+
+  <!-- ================= VISIÓN (scroll pegajoso) ================= -->
+  <section class="dream" id="vision">
+    <div class="dream-sticky">
+      <span class="eyebrow dream-title">La visión</span>
+
+      <!-- Imágenes que aparecen conforme haces scroll (en orden) -->
+      <figure class="dream-item polaroid d1"><div class="ph" style="--ar: 1"><span class="ph-label">01</span></div><figcaption>Información dispersa</figcaption></figure>
+      <figure class="dream-item polaroid d2"><div class="ph" style="--ar: 4/5"><span class="ph-label">02</span></div><figcaption>Una mascota que come datos</figcaption></figure>
+      <figure class="dream-item sticker d5"><div class="ph"><span class="ph-label">03</span></div></figure>
+      <figure class="dream-item polaroid d3"><div class="ph"><span class="ph-label">04</span></div><figcaption>Conocimiento conectado</figcaption></figure>
+      <figure class="dream-item sticker d6"><div class="ph"><span class="ph-label">05</span></div></figure>
+      <figure class="dream-item polaroid d4"><div class="ph" style="--ar: 1"><span class="ph-label">06</span></div><figcaption>Tu segundo cerebro</figcaption></figure>
+
+      <div class="win notes">
+        <div class="win-bar"><i></i><i></i><i></i><span>Notas</span></div>
+        <div class="win-body">
+          <p class="manifesto" id="manifesto">Guardamos PDFs, enlaces, notas e imágenes por todas partes y luego no los encontramos. MINDIE es una mascota que vive en tu escritorio: la alimentas con tu información, ella la organiza, conecta tus ideas y te ayuda a recuperar tus recuerdos digitales cuando los necesites.</p>
+          <div class="sign">— El equipo de MINDIE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FUNCIONES ================= -->
+  <section class="block" id="funciones">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Funciones</span>
+        <h2>Lo que puede hacer</h2>
+        <p>Captura, recupera y explora tu conocimiento.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-text reveal">
+            <span class="tag">01 /</span>
+            <h3>Alimenta a tu mascota</h3>
+            <p>Arrastra un PDF y ella lo &ldquo;come&rdquo;. También puedes subir texto e imágenes, o pegar un enlace: MINDIE extrae el contenido de la página sin imágenes ni publicidad. Mientras procesa, verás animaciones de carga.</p>
+          </div>
+          <div class="win reveal" style="--delay: .1s; --r0: 3deg">
+            <div class="win-bar"><i></i><i></i><i></i><span>comida.mp4</span></div>
+            <div class="win-body"><video src="utils/images/video/comida.mp4" style="width:100%;display:block;border-radius:12px" autoplay muted loop playsinline controls></video></div>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-text reveal">
+            <span class="tag">02 /</span>
+            <h3>Chatea con tu conocimiento</h3>
+            <p>Pregunta dentro de la app sobre los documentos que contiene, y revisa o retoma tus conversaciones anteriores gracias al historial.</p>
+          </div>
+          <div class="win reveal" style="--delay: .1s; --r0: -3deg">
+            <div class="win-bar"><i></i><i></i><i></i><span>chat.mov</span></div>
+            <div class="win-body"><div class="ph"><span class="ph-label">Captura o video</span></div></div>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-text reveal">
+            <span class="tag">03 /</span>
+            <h3>Explora el grafo de nodos</h3>
+            <p>Visualiza el cerebro de conocimiento y cómo se conecta lo que MINDIE ha aprendido. Y si quieres, ponle tu propia mascota con tus imágenes.</p>
+          </div>
+          <div class="win reveal" style="--delay: .1s; --r0: 3deg">
+            <div class="win-bar"><i></i><i></i><i></i><span>grafo.mov</span></div>
+            <div class="win-body"><video src="utils/images/video/cerebro.mp4" style="width:100%;display:block;border-radius:12px" autoplay muted loop playsinline controls></video></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MARQUEE ================= -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Segundo cerebro ✦</span><span>Modelos locales ✦</span><span>Open source ✦</span><span>Mascota personalizable ✦</span>
+      <span>Segundo cerebro ✦</span><span>Modelos locales ✦</span><span>Open source ✦</span><span>Mascota personalizable ✦</span>
+      </div>
+  </div>
+
+  <!-- ================= CÓMO FUNCIONA ================= -->
+  <section class="block" id="como">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Cómo funciona</span>
+        <h2>En tres pasos</h2>
+      </div>
+      <div class="steps">
+        <div class="win step reveal" style="--delay: 0s">
+          <div class="win-bar"><i></i><i></i><i></i><span>Paso 1</span></div>
+          <div class="win-body"><div class="ph" style="--ar: 4/3"><span class="ph-label">Imagen</span></div>
+            <h4><span class="num">1</span> Aliméntala</h4><p>Arrastra PDFs, sube texto o imágenes, o pega un enlace.</p></div>
+        </div>
+        <div class="win step reveal" style="--delay: .15s">
+          <div class="win-bar"><i></i><i></i><i></i><span>Paso 2</span></div>
+          <div class="win-body"><div class="ph" style="--ar: 4/3"><span class="ph-label">Imagen</span></div>
+            <h4><span class="num">2</span> Déjala pensar</h4><p>MINDIE procesa e interconecta la información con un modelo local de inteligencia artificial.</p></div>
+        </div>
+        <div class="win step reveal" style="--delay: .3s">
+          <div class="win-bar"><i></i><i></i><i></i><span>Paso 3</span></div>
+          <div class="win-body"><div class="ph" style="--ar: 4/3"><span class="ph-label">Imagen</span></div>
+            <h4><span class="num">3</span> Pregúntale</h4><p>Chatea con tu conocimiento y explora el grafo de ideas.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PREVIEW ================= -->
+  <!-- <section class="block" id="preview" style="padding-top: 0">
+    <div class="wrap">
+      <div class="win reveal" style="--r0: 0deg">
+        <div class="win-bar"><i></i><i></i><i></i><span>preview-completo.mov</span></div>
+        <div class="win-body"><div class="ph" style="--ar: 16/9"><span class="ph-label">Video demo 16:9</span></div></div>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- ================= FAQ ================= -->
+  <section class="block" id="faq" style="background: var(--color-bg)">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Preguntas frecuentes</h2>
+      </div>
+      <div class="faq">
+        <details class="reveal"><summary>¿Qué es Mindie?</summary><p>Un segundo cerebro digital estilo tamagotchi: una mascota que vive en tu PC, se alimenta de la información que le das, organiza el conocimiento y te ayuda a recuperarlo.</p></details>
+        <details class="reveal" style="--delay: .05s"><summary>¿Qué modelo usa?</summary><p>Por defecto trabaja con modelos locales.</p></details>
+        <details class="reveal" style="--delay: .1s"><summary>¿Qué puedo guardar en ella?</summary><p>PDFs (arrastrándolos hacia la mascota), texto, imágenes y enlaces web, de los que extrae el contenido omitiendo imágenes y publicidad.</p></details>
+        <details class="reveal" style="--delay: .15s"><summary>¿Puedo usar mi propia mascota?</summary><p>Sí, puedes agregar tu propia mascota con tus imágenes ya definidas.</p></details>
+        <details class="reveal" style="--delay: .2s"><summary>¿Es open source?</summary><p>Sí. Las contribuciones son bienvenidas: abre un issue o un pull request en el repositorio.</p></details>
+        <details class="reveal" style="--delay: .25s"><summary>¿Cuándo estará disponible?</summary><p>La primera versión se realizó durante el Hacktoberfest 2026.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section class="cta">
+    <img class="bubble" src="utils/images/Mindie_logo.png" alt="Mindie, tu mascota" />
+    <h2>¿La quieres probar?</h2>
+    <a href="#" class="btn btn-primary">Conocer más</a>
+  </section>
+
+  <footer>
+    <strong>Mindie</strong>
+    segundo cerebro digital · open source · Hack Day 2026
+  </footer>
+
+  <script>
+    /* ---------- Reloj de la barra (como el de heyclicky) ---------- */
+    const clock = document.getElementById('clock');
+    const tick = () => clock.textContent = new Date().toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' });
+    tick(); setInterval(tick, 30000);
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- Manifiesto: separa en palabras ---------- */
+    const manifesto = document.getElementById('manifesto');
+    manifesto.innerHTML = manifesto.textContent.trim().split(/\s+/)
+      .map(w => `<span class="w">${w}</span>`).join(' ');
+    const words = manifesto.querySelectorAll('.w');
+
+    const dream = document.querySelector('.dream');
+    const dreamItems = dream.querySelectorAll('.dream-item');
+    const floats = document.querySelectorAll('.float');
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    /* ---------- Lógica de scroll ---------- */
+    function onScroll() {
+      const y = scrollY;
+
+      // 1) Parallax de las ventanas del hero
+      floats.forEach(el => {
+        el.style.transform = `translateY(${y * parseFloat(el.dataset.speed)}px)`;
+      });
+
+      // 2) Sección pegajosa: progreso de 0 a 1
+      const rect = dream.getBoundingClientRect();
+      const total = dream.offsetHeight - innerHeight;
+      const p = clamp(-rect.top / total, 0, 1);
+
+      // Cada imagen aparece en su propio umbral
+      dreamItems.forEach((el, i) => {
+        const threshold = 0.08 + (i / dreamItems.length) * 0.75;
+        el.classList.toggle('on', p > threshold);
+      });
+
+      // Las palabras se iluminan según el progreso
+      const lit = Math.floor(clamp(p / 0.85, 0, 1) * words.length);
+      words.forEach((w, i) => w.classList.toggle('on', i < lit));
+    }
+
+    if (!reduced) {
+      let ticking = false;
+      addEventListener('scroll', () => {
+        if (!ticking) { requestAnimationFrame(() => { onScroll(); ticking = false; }); ticking = true; }
+      }, { passive: true });
+      addEventListener('resize', onScroll);
+      onScroll();
+
+      /* ---------- Reveal genérico al entrar en pantalla ---------- */
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.2, rootMargin: '0px 0px -60px 0px' });
+      document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    }
+  </script>
+</body>
+</html>
