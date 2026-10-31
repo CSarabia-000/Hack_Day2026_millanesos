@@ -1,5 +1,7 @@
 # MINDIE 🧠🐾
 
+[Mindie](https://damanger.github.io/Mindie/)
+
 **MINDIE** es un segundo cerebro digital impulsado por la API  de **Gemma 4** o de forma local a través de Ollama (o cualquier modelo de pesos abierto). Captura información, organiza el conocimiento, conecta ideas y te ayuda a recuperar tus recuerdos digitales.
 
 Es una app de escritorio estilo *tamagotchi*: una mascota vive en tu PC y se "alimenta" de la información que le das.
